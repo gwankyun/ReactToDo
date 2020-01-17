@@ -1,4 +1,5 @@
 import React, { useState, FC } from 'react';
+import 'immutable'
 import ReactDOM from 'react-dom';
 import './index.css';
 // import App from './App';
@@ -80,10 +81,12 @@ const App: FC = () => {
 
     return (
         <div>
-            <div>
-                <input type="text" value={add} onChange={e => setAdd(e.target.value)} />
-                <button onClick={_ => onAdd()}>添加</button>
-            </div>
+            <ul>
+                <li>
+                    <input type="text" value={add} onChange={e => setAdd(e.target.value)} />
+                    <button onClick={_ => onAdd()}>添加</button>
+                </li>
+            </ul>
             <List value={value} onRemove={onRemove} />
         </div>
     );
