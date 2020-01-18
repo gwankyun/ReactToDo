@@ -1,4 +1,4 @@
-import React, { useState, FC } from 'react';
+import React, { useState, useEffect, FC } from 'react';
 import Immutable from 'immutable'
 import ReactDOM from 'react-dom';
 import './index.css';
@@ -20,6 +20,24 @@ class Content extends IClone<Content> {
     clone(): Content {
         return new Content(this.key, this.value);
     }
+}
+
+const Clock: FC = () => {
+    const [date, setDate] = useState<string>(new Date().toLocaleTimeString());
+
+    useEffect(() => {
+        const times = setInterval(
+            () => setDate(new Date().toLocaleTimeString()),
+            1000);
+            
+        return () => {
+            clearInterval(times);
+        }
+    }, [date]);
+
+    return (
+        <div>{date}</div>
+    );
 }
 
 interface IListItemProps {
@@ -77,6 +95,11 @@ const App: FC = () => {
 
     return (
         <div>
+            <ul>
+                <li>
+                    <Clock />
+                </li>
+            </ul>
             <ul>
                 <li>
                     <input type="text" value={add} onChange={e => setAdd(e.target.value)} />
