@@ -1,115 +1,83 @@
-import React, { useState, useEffect, FC } from 'react';
-import Immutable from 'immutable'
+import React, { FC, useState } from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 // import App from './App';
 import * as serviceWorker from './serviceWorker';
 
-abstract class IClone<T> {
-    abstract clone(): T;
-}
+import { produce } from 'immer';
+import { List } from './list';
+import { Button } from './button';
+import { TextInput } from './text-input'
 
-class Content extends IClone<Content> {
-    key: number;
-    value: string;
-    constructor(key_: number, value_: string) {
-        super();
-        this.key = key_;
-        this.value = value_;
-    }
-    clone(): Content {
-        return new Content(this.key, this.value);
-    }
-}
+class Item {
+  id: number;
+  value: string;
 
-const Clock: FC = () => {
-    const [date, setDate] = useState<string>(new Date().toLocaleTimeString());
-
-    useEffect(() => {
-        const times = setInterval(
-            () => setDate(new Date().toLocaleTimeString()),
-            1000);
-            
-        return () => {
-            clearInterval(times);
-        }
-    }, [date]);
-
-    return (
-        <div>{date}</div>
-    );
-}
-
-interface IListItemProps {
-    value: string;
-}
-
-const ListItem: FC<IListItemProps> = props => {
-    const [value, setValue] = useState<string>(props.value);
-
-    return (
-        <input type="text" value={value} onChange={e => setValue(e.target.value)} />
-    );
-}
-
-interface IListProps {
-    value: Immutable.List<Content>;
-    onRemove: (key: number) => void;
-}
-
-const List: FC<IListProps> = props => {
-    const value = props.value;
-    const onRemove = props.onRemove;
-
-    const list = value.map(i =>
-        <li key={i.key}>
-            <ListItem value={i.value} />
-            <button onClick={_ => onRemove(i.key)}>刪除</button>
-        </li>
-    );
-
-    return (
-        <ul>{list}</ul>
-    );
+  constructor() {
+    this.id = 0;
+    this.value = '';
+  }
 }
 
 const App: FC = () => {
-    const [value, setValue] = useState<Immutable.List<Content>>(Immutable.List<Content>());
-    const [index, setIndex] = useState<number>(0);
-    const [add, setAdd] = useState<string>("");
+  const [list, setList] = useState<Item[]>([]);
+  const [value, setValue] = useState<string>("");
+  const [id, setId] = useState<number>(0);
 
-    function onRemove(key: number): void {
-        const idx = value.findIndex(i => i.key === key);
-        if (idx !== -1) {
-            setValue(value.splice(idx, 1));
-        }
-    }
+  function onAdd() {
+    const modified = produce(list, newList => {
+      let item = new Item();
+      item.id = id;
+      item.value = value;
+      newList.push(item);
+    });
 
-    function onAdd(): void {
-        if (add) {
-            setValue(value.push(new Content(index + 1, add)));
-            setIndex(index + 1);
-            setAdd("");
-        }
-    }
+    setList(modified);
+    setValue("");
+    setId(id + 1);
+  }
 
-    return (
-        <div>
-            <ul>
-                <li>
-                    <Clock />
-                </li>
-            </ul>
-            <ul>
-                <li>
-                    <input type="text" value={add} onChange={e => setAdd(e.target.value)} />
-                    <button onClick={_ => onAdd()}>添加</button>
-                </li>
-            </ul>
-            <List value={value} onRemove={onRemove} />
-        </div>
-    );
-}
+  function onRemove(index: number) {
+    let modified = produce(list, newList => {
+      newList.splice(index, 1);
+    });
+
+    setList(modified);
+  }
+
+  function onUpdate(index: number, value: string) {
+    let modified = produce(list, newList => {
+      let item = new Item();
+      item.id = newList[index].id;
+      item.value = value;
+      newList[index] = item;
+    });
+
+    setList(modified);
+  }
+
+  return (
+    <div>
+      <div>
+        <TextInput value={value}
+          onChange={v => setValue(v)} />
+        <Button onClick={onAdd}>添加</Button>
+      </div>
+      <List value={list} onItemRender={(v, i) => {
+        let item = v as Item;
+        return (
+          <li key={item.id}>
+            <TextInput value={item.value}
+              onChange={v => onUpdate(i, v)} />
+            <Button onClick={() =>
+              onRemove(i)
+            }>刪除</Button>
+          </li>
+        );
+      }} />
+    </div>
+  );
+};
 
 ReactDOM.render(<App />, document.getElementById('root'));
 
