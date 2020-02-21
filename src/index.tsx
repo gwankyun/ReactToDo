@@ -4,12 +4,17 @@ import './index.css';
 // import App from './App';
 import * as serviceWorker from './serviceWorker';
 
-import { produce } from 'immer';
 import { List } from './list';
 import { Button } from './button';
-import { TextInput } from './text-input'
+import { TextInput } from './text-input';
+import { useArray } from './use-array';
 
-class Item {
+interface IItem {
+  id: number;
+  value: string;
+}
+
+class Item implements IItem {
   id: number;
   value: string;
 
@@ -20,40 +25,25 @@ class Item {
 }
 
 const App: FC = () => {
-  const [list, setList] = useState<Item[]>([]);
-  const [value, setValue] = useState<string>("");
+  const [value, setValue] = useState<string>('');
   const [id, setId] = useState<number>(0);
+  const array = useArray<Item>([]);
 
   function onAdd() {
-    const modified = produce(list, newList => {
-      let item = new Item();
-      item.id = id;
-      item.value = value;
-      newList.push(item);
-    });
-
-    setList(modified);
+    array.push({ id: id, value: value });
     setValue("");
     setId(id + 1);
   }
 
   function onRemove(index: number) {
-    let modified = produce(list, newList => {
-      newList.splice(index, 1);
-    });
-
-    setList(modified);
+    array.splice(index, 1);
   }
 
   function onUpdate(index: number, value: string) {
-    let modified = produce(list, newList => {
-      let item = new Item();
-      item.id = newList[index].id;
-      item.value = value;
-      newList[index] = item;
+    array.set(index, {
+      id: array.data[index].id,
+      value: value
     });
-
-    setList(modified);
   }
 
   return (
@@ -63,7 +53,7 @@ const App: FC = () => {
           onChange={v => setValue(v)} />
         <Button onClick={onAdd}>添加</Button>
       </div>
-      <List value={list} onItemRender={(v, i) => {
+      <List value={array.data} onItemRender={(v, i) => {
         let item = v as Item;
         return (
           <li key={item.id}>
