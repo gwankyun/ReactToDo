@@ -8,12 +8,11 @@ import { produce } from 'immer';
 import { List } from './list';
 import { Button } from './button';
 import { TextInput } from './text-input';
-// import { useArray } from './use-array';
 
 function useUpdater<T>(init: T): [T, (updater: (newValue: T) => void) => void] {
   const [data, setData] = useState<T>(init);
 
-  let update = (updater: (newValue: T) => void) => {
+  const update = (updater: (newValue: T) => void) => {
     const modified = produce(data, (newValue: T) => {
       updater(newValue);
     });
@@ -44,25 +43,33 @@ const App: FC = () => {
   const [array, updateArray] = useUpdater<Item[]>([]);
 
   function onAdd() {
-    updateArray(n => {
-      n.push({ id: id, value: value });
+    updateArray(newArray => {
+      newArray.push({ id: id, value: value });
     });
     setValue("");
     setId(id + 1);
   }
 
   function onRemove(index: number) {
-    updateArray(n => {
-      n.splice(index, 1);
+    updateArray(newArray => {
+      newArray.splice(index, 1);
     });
   }
 
   function onUpdate(index: number, value: string) {
-    updateArray(n => {
-      n[index] = {
+    updateArray(newArray => {
+      newArray[index] = {
         id: array[index].id,
         value: value
       };
+    });
+  }
+
+  function onTop(index: number) {
+    updateArray(newArray => {
+      const newItem = array[index];
+      newArray.splice(index, 1);
+      newArray.unshift(newItem);
     });
   }
 
@@ -79,16 +86,8 @@ const App: FC = () => {
           <li key={item.id}>
             <TextInput value={item.value}
               onChange={v => onUpdate(i, v)} />
-            <Button onClick={() =>
-              onRemove(i)
-            }>刪除</Button>
-            <Button onClick={() => {
-              updateArray(newArray => {
-                const newItem = item;
-                newArray.splice(i, 1);
-                newArray.unshift(newItem);
-              });
-            }}>置頂</Button>
+            <Button onClick={() =>onRemove(i)}>刪除</Button>
+            <Button onClick={() => onTop(i)}>置頂</Button>
           </li>
         );
       }} />
