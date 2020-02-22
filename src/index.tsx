@@ -8,7 +8,20 @@ import { produce } from 'immer';
 import { List } from './list';
 import { Button } from './button';
 import { TextInput } from './text-input';
-import { useArray } from './use-array';
+// import { useArray } from './use-array';
+
+function useUpdater<T>(init: T): [T, (updater: (newValue: T) => void) => void] {
+  const [data, setData] = useState<T>(init);
+
+  let update = (updater: (newValue: T) => void) => {
+    const modified = produce(data, (newValue: T) => {
+      updater(newValue);
+    });
+    setData(modified);
+  };
+
+  return [data, update];
+}
 
 interface IItem {
   id: number;
@@ -28,22 +41,28 @@ class Item implements IItem {
 const App: FC = () => {
   const [value, setValue] = useState<string>('');
   const [id, setId] = useState<number>(0);
-  const array = useArray<Item>([]);
+  const [array, updateArray] = useUpdater<Item[]>([]);
 
   function onAdd() {
-    array.push({ id: id, value: value });
+    updateArray(n => {
+      n.push({ id: id, value: value });
+    });
     setValue("");
     setId(id + 1);
   }
 
   function onRemove(index: number) {
-    array.splice(index, 1);
+    updateArray(n => {
+      n.splice(index, 1);
+    });
   }
 
   function onUpdate(index: number, value: string) {
-    array.set(index, {
-      id: array.data[index].id,
-      value: value
+    updateArray(n => {
+      n[index] = {
+        id: array[index].id,
+        value: value
+      };
     });
   }
 
@@ -54,7 +73,7 @@ const App: FC = () => {
           onChange={v => setValue(v)} />
         <Button onClick={onAdd}>添加</Button>
       </div>
-      <List value={array.data} onItemRender={(v, i) => {
+      <List value={array} onItemRender={(v, i) => {
         let item = v as Item;
         return (
           <li key={item.id}>
@@ -64,8 +83,8 @@ const App: FC = () => {
               onRemove(i)
             }>刪除</Button>
             <Button onClick={() => {
-              array.update(newArray => {
-                let newItem: Item = { id: item.id, value: item.value };
+              updateArray(newArray => {
+                const newItem = item;
                 newArray.splice(i, 1);
                 newArray.unshift(newItem);
               });
