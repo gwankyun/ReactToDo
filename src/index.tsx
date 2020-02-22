@@ -4,6 +4,7 @@ import './index.css';
 // import App from './App';
 import * as serviceWorker from './serviceWorker';
 
+import { produce } from 'immer';
 import { List } from './list';
 import { Button } from './button';
 import { TextInput } from './text-input';
@@ -62,6 +63,13 @@ const App: FC = () => {
             <Button onClick={() =>
               onRemove(i)
             }>刪除</Button>
+            <Button onClick={() => {
+              array.update(newArray => {
+                let newItem: Item = { id: item.id, value: item.value };
+                newArray.splice(i, 1);
+                newArray.unshift(newItem);
+              });
+            }}>置頂</Button>
           </li>
         );
       }} />
