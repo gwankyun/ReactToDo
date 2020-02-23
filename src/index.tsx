@@ -75,7 +75,7 @@ const App: FC = () => {
 
   return (
     <div>
-      <div>
+      <div className='Item'>
         <TextInput value={value}
           onChange={v => setValue(v)} />
         <Button onClick={onAdd}>添加</Button>
@@ -83,7 +83,7 @@ const App: FC = () => {
       <List value={array} onItemRender={(v, i) => {
         let item = v as Item;
         return (
-          <li key={item.id}>
+          <li key={item.id} className='Item'>
             <TextInput value={item.value}
               onChange={v => onUpdate(i, v)} />
             <Button onClick={() =>onRemove(i)}>刪除</Button>
