@@ -43,10 +43,14 @@ const App: FC = () => {
   const [array, updateArray] = useUpdater<Item[]>([]);
 
   function onAdd() {
+    if (value === '') {
+      alert('不允許為空');
+      return;
+    }
     updateArray(newArray => {
       newArray.push({ id: id, value: value });
     });
-    setValue("");
+    setValue('');
     setId(id + 1);
   }
 
