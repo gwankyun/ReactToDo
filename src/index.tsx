@@ -1,4 +1,4 @@
-import React, { FC, useState } from 'react';
+import React, { FC, useState, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 // import App from './App';
@@ -42,7 +42,7 @@ const App: FC = () => {
   const [id, setId] = useState<number>(0);
   const [array, updateArray] = useUpdater<Item[]>([]);
 
-  function onAdd() {
+  const onAdd = useCallback(() => {
     if (value === '') {
       alert('不允許為空');
       return;
@@ -52,30 +52,30 @@ const App: FC = () => {
     });
     setValue('');
     setId(id + 1);
-  }
+  }, [value, id, updateArray]);
 
-  function onRemove(index: number) {
+  const onRemove = useCallback((index: number) => {
     updateArray(newArray => {
       newArray.splice(index, 1);
     });
-  }
+  }, [updateArray]);
 
-  function onUpdate(index: number, value: string) {
+  const onUpdate = useCallback((index: number, value: string) => {
     updateArray(newArray => {
       newArray[index] = {
         id: array[index].id,
         value: value
       };
     });
-  }
+  }, [updateArray, array]);
 
-  function onTop(index: number) {
+  const onTop = useCallback((index: number) => {
     updateArray(newArray => {
       const newItem = array[index];
       newArray.splice(index, 1);
       newArray.unshift(newItem);
     });
-  }
+  }, [updateArray, array]);
 
   return (
     <div>
