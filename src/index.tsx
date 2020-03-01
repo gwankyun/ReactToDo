@@ -1,97 +1,34 @@
-import React, { FC, useState, useCallback } from 'react';
+import React, { FC, useState } from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 // import App from './App';
 import * as serviceWorker from './serviceWorker';
 
-import { produce } from 'immer';
 import { List } from './list';
 import { Button } from './button';
 import { TextInput } from './text-input';
-
-function useUpdater<T>(init: T): [T, (updater: (newValue: T) => void) => void] {
-  const [data, setData] = useState<T>(init);
-
-  const update = (updater: (newValue: T) => void) => {
-    const modified = produce(data, (newValue: T) => {
-      updater(newValue);
-    });
-    setData(modified);
-  };
-
-  return [data, update];
-}
-
-interface IItem {
-  id: number;
-  value: string;
-}
-
-class Item implements IItem {
-  id: number;
-  value: string;
-
-  constructor() {
-    this.id = 0;
-    this.value = '';
-  }
-}
+import { useServer, Item } from './use-server';
 
 const App: FC = () => {
-  const [value, setValue] = useState<string>('');
-  const [id, setId] = useState<number>(0);
-  const [array, updateArray] = useUpdater<Item[]>([]);
-
-  const onAdd = useCallback(() => {
-    if (value === '') {
-      alert('不允許為空');
-      return;
-    }
-    updateArray(newArray => {
-      newArray.push({ id: id, value: value });
-    });
-    setValue('');
-    setId(id + 1);
-  }, [value, id, updateArray]);
-
-  const onRemove = useCallback((index: number) => {
-    updateArray(newArray => {
-      newArray.splice(index, 1);
-    });
-  }, [updateArray]);
-
-  const onUpdate = useCallback((index: number, value: string) => {
-    updateArray(newArray => {
-      newArray[index] = {
-        id: array[index].id,
-        value: value
-      };
-    });
-  }, [updateArray, array]);
-
-  const onTop = useCallback((index: number) => {
-    updateArray(newArray => {
-      const newItem = array[index];
-      newArray.splice(index, 1);
-      newArray.unshift(newItem);
-    });
-  }, [updateArray, array]);
+  const server = useServer();
 
   return (
     <div>
       <div className='Item'>
-        <TextInput value={value}
-          onChange={v => setValue(v)} />
-        <Button onClick={onAdd}>添加</Button>
+        <TextInput value={server.value}
+          onChange={v => server.setValue(v)} />
+        <Button onClick={() => server.onAdd()}>添加</Button>
       </div>
-      <List value={array} onItemRender={(v, i) => {
+      <List value={server.array} onItemRender={(v, i) => {
         let item = v as Item;
         return (
           <li key={item.id} className='Item'>
-            <TextInput value={item.value}
-              onChange={v => onUpdate(i, v)} />
-            <Button onClick={() =>onRemove(i)}>刪除</Button>
-            <Button onClick={() => onTop(i)}>置頂</Button>
+            <div>
+              <TextInput value={item.value}
+                onChange={v => server.onUpdate(i, v)} />
+              <Button onClick={() => server.onRemove(i)}>刪除</Button>
+              <Button onClick={() => server.onTop(i)}>置頂</Button>
+            </div>
           </li>
         );
       }} />
