@@ -1,5 +1,50 @@
+@import '~antd/dist/antd.css';
+
 .App {
   text-align: center;
+}
+
+.Button {
+  float: left;
+  height: 100%;
+}
+
+.Switch {
+  float: left;
+}
+
+.ToDo {
+  margin: 0px;
+  padding: 0px;
+  width: 100%;
+}
+
+.ToDo-deleted {
+  margin: 0px;
+  padding: 0px;
+  width: 100%;
+  text-decoration: line-through;
+}
+
+/* div:hover {
+  border-color: yellow;
+} */
+
+.Content {
+  margin-left: 10px;
+  float: left;
+  font-size: 28px;
+}
+
+.Input {
+  font-size: 28px;
+}
+
+.Content-deleted {
+  margin-left: 10px;
+  float: left;
+  font-size: 28px;
+  text-decoration: line-through;
 }
 
 .App-logo {
